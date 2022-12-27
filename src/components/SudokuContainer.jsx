@@ -1,163 +1,160 @@
-import React, { useState,useEffect } from 'react'
-import { Button, Stack } from 'react-bootstrap';
-import { NumberContainer } from './NumberContainer';
-import "./SudokuContainer.css"
+import { useRef } from "react";
+import { Button, Stack } from "react-bootstrap";
+import { NumberContainer } from "./NumberContainer";
+import "./SudokuContainer.css";
 
-const initial = [
-    [0, 5, 0, 9, 0, 0, 0, 0, 0],
-    [8, 0, 0, 0, 4, 0, 3, 0, 7],
-    [0, 0, 0, 2, 8, 0, 1, 9, 0],
-    [5, 3, 8, 6, 0, 7, 9, 4, 0],
-    [0, 2, 0, 3, 0, 1, 0, 0, 0],
-    [1, 0, 9, 8, 0, 4, 6, 2, 3],
-    [9, 0, 7, 4, 0, 0, 0, 0, 0],
-    [0, 4, 5, 0, 0, 0, 2, 0, 9],
-    [0, 0, 0, 0, 3, 0, 0, 7, 0],
-]
+export const SudokuContainer = ({ setArray, array, setRowCol, rowCol }) => {
+	// How to get the deep copy of the array
+	const getDeepCopy = (whatever) => {
+		return JSON.parse(JSON.stringify(whatever));
+	};
 
-export const SudokuContainer = () => {
+	function wait(delay) {
+		return new Promise((res) => setTimeout(res, delay));
+	}
 
-    // How to get the deep copy of the array
-    const getDeepCopy = (whatever) => {
-        return JSON.parse(JSON.stringify(whatever))
-    }
-    
-    // initial state of the whole array to be followed throughout
-    const [array, setArray] = useState(getDeepCopy(initial));
+	const changeArrayEl = async (row, col, value) => {
+		await wait(10);
 
-    // To check is the position is valid or not
+		setRowCol([row, col]);
 
+		setArray((prev) => {
+			return prev.map((elem, i) => {
+				if (i === row) {
+					return elem.map((el, j) => {
+						if (j === col) return value;
+						else return el;
+					});
+				} else return elem;
+			});
+		});
 
-    function isValid(array,row, col, value) {
-        // console.log(array[row,col]);
-        if ((validateColumn(array,row, col, value)) || (validateRow(array, row, col, value)) || (validateBox(array, row, col, value))) {
-            return false;
-        } else {
-            return true;
-        }
-    }
+		await wait(10);
+	};
 
-    function validateBox(array,row, col, value) {
-        row = Math.floor(row / 3) * 3;
-        col = Math.floor(col / 3) * 3;
-        var isFound = false;
-        for (var i = 0; i < 3; i++) {
-            for (var j = 0; j < 3; j++) {
-                if (array[row + i][col + j] == parseInt(value)) isFound = true;
-            }
-        }
-        return isFound;
-    }
+	function isValid(arr, row, col, value) {
+		function validateBox(arr, row, col, value) {
+			row = Math.floor(row / 3) * 3;
+			col = Math.floor(col / 3) * 3;
+			var isFound = false;
+			for (var i = 0; i < 3; i++) {
+				for (var j = 0; j < 3; j++) {
+					if (arr[row + i][col + j] == parseInt(value)) isFound = true;
+				}
+			}
+			return isFound;
+		}
 
-    function validateRow(array, row, col, value) {
-        var isFound = false;
-        for (var i = 0; i < 9; i++) {
-            if (array[row][i] === parseInt(value)) isFound = true;
-        }
-        return isFound;
-    }
+		function validateRow(arr, row, col, value) {
+			var isFound = false;
+			for (var i = 0; i < 9; i++) {
+				if (arr[row][i] === parseInt(value)) isFound = true;
+			}
+			return isFound;
+		}
 
-    function validateColumn(array, row, col, value) {
-        var isFound = false;
-        for (var i = 0; i < 9; i++) {
-            if (array[i][col] === parseInt(value)) isFound = true;
-        }
-        return isFound;
-    }
+		function validateColumn(arr, row, col, value) {
+			var isFound = false;
+			for (var i = 0; i < 9; i++) {
+				if (arr[i][col] === parseInt(value)) isFound = true;
+			}
+			return isFound;
+		}
 
-    // const displayBoard = (array) => {
-    //     let text = ''
-    //     for (let i = 0; i < array.length; i++) {
-    //         for (let j = 0; j < array[i].length; j++) {
-    //             text += array[i][j] + ' ';
-    //         }
-    //         console.log(text);
-    //         text = '';
-    //     }
-    // }
+		if (
+			validateColumn(arr, row, col, value) ||
+			validateRow(arr, row, col, value) ||
+			validateBox(arr, row, col, value)
+		) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
-    
-    const driverFunction = () => {
-        var ans = new Array()
-        let sudoku = getDeepCopy(initial)
-        solveSudoku(sudoku,ans)
-        setArray(ans)
-        // console.log(ans)
-    }
+	const solveSudoku = async (arr, row = 0, col = 0, ans, ansFound) => {
+		await wait(10);
 
-    const solveSudoku = ( arr,answer , row=0, col=0) => {
-        
-        if (row === 9) {
-            
-            for (let i = 0; i < array.length; i++) {
-                let internal = new Array();
-                for (let j = 0; j < array[i].length; j++) {
-                    internal.push(arr[i][j])
-                }
-                answer.push(internal);
-            }
-            // answer = getDeepCopy(ans);
-            // console.log(answer);
-            return 
-            // console.log(ans);
-        }
+		if (row === 9) {
+			for (let i = 0; i < arr.length; i++) {
+				let internalArr = [];
+				for (let j = 0; j < arr.length; j++) {
+					internalArr.push(arr[i][j]);
+				}
+				ans.push(internalArr);
+			}
+			console.log("it has returned");
+			return true;
+		}
 
-        let nextRow = 0;
-        let nextCol = 0;
-    
-        if (col === 8) {
-            nextRow = row + 1;
-            nextCol = 0;
-        } else {
-            nextRow = row;
-            nextCol = col + 1;
-        }
-    
-        if (arr[row][col] !== 0){
-            solveSudoku(arr, answer ,nextRow, nextCol);
-        } 
-        else {
-            for (var value = 1; value < 10; value++) {
-                
-                if (isValid(arr,row, col, value)) {
-                    arr[row][col] = value;
-                    solveSudoku(arr, answer ,nextRow, nextCol);
-                    arr[row][col] = 0;
-                }
-            }
-            
-        }
-        
-        return answer;
-    
-    }
+		let nextRow = 0;
+		let nextCol = 0;
 
-    console.log(array)
+		if (col === 8) {
+			nextRow = row + 1;
+			nextCol = 0;
+		} else {
+			nextRow = row;
+			nextCol = col + 1;
+		}
+		if (!ansFound) {
+			if (arr[row][col] !== 0) {
+				ansFound = await solveSudoku(arr, nextRow, nextCol, ans, ansFound);
+			} else {
+				for (var value = 1; value < 10; value++) {
+					if (isValid(arr, row, col, value)) {
+						arr[row][col] = value;
+						await changeArrayEl(row, col, value);
+						ansFound = await solveSudoku(arr, nextRow, nextCol, ans, ansFound);
+						console.log("backtracking");
+						if (!ansFound) {
+							await changeArrayEl(row, col, 0);
+							arr[row][col] = 0;
+						}
+					}
+				}
+			}
+		}
 
-    const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8].map((row, rIdx) => {
+		return ansFound;
+	};
 
-        return (
-            <Stack key={rIdx} direction="horizontal">
-                {
-                    [0, 1, 2, 3, 4, 5, 6, 7, 8].map((col, cIdx) => (
-                        <NumberContainer 
-                        key={cIdx} 
-                        val={array[row][col]} 
-                        row={row} 
-                        col={col} />
-                    ))
-                }
-            </Stack>
-        )
-    })
+	const btn = useRef(null);
 
-    return (
-        <>
+	const driverFunction = async () => {
+		btn.current.disabled = true;
+		const sudoku = getDeepCopy(array);
+		const ans = [];
+		await solveSudoku(sudoku, 0, 0, ans);
+		setArray(ans);
+	};
 
-            {cells}
-            <Button onClick={driverFunction}>Solve Sudoku</Button>
-            
-        </>
-    )
+	const cells = [0, 1, 2, 3, 4, 5, 6, 7, 8].map((row, rIdx) => {
+		return (
+			<Stack
+				key={rIdx}
+				direction='horizontal'>
+				{[0, 1, 2, 3, 4, 5, 6, 7, 8].map((col, cIdx) => (
+					<NumberContainer
+						key={cIdx}
+						val={array && array[row][col]}
+						row={row}
+						col={col}
+						rowCol={rowCol}
+					/>
+				))}
+			</Stack>
+		);
+	});
 
-}
+	return (
+		<>
+			{cells}
+			<Button
+				ref={btn}
+				onClick={driverFunction}>
+				Solve Sudoku
+			</Button>
+		</>
+	);
+};
